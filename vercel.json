@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://afrikakeur-api.onrender.com/api/:path*"
+      "destination": "https://afrikakeur-hotel.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",

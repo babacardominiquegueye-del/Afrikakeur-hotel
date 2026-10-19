@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: afrikakeur-api
+    name: afrikakeur-hotel
     runtime: node
     rootDir: server
     buildCommand: npm ci
