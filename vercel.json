@@ -1,9 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "installCommand": "npm --prefix client install",
-  "buildCommand": "npm --prefix client run build",
-  "outputDirectory": "client/dist",
+  "installCommand": "if [ ! -d client ]; then cd ..; fi && npm --prefix client install",
+  "buildCommand": "if [ ! -d client ]; then cd ..; fi && npm --prefix client run build && rm -rf dist && mkdir -p dist && cp -r client/dist/. dist/",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/api/:path*",
