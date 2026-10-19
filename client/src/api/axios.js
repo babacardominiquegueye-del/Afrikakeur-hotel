@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
-});
+// VITE_API_URL peut être vide (proxy /api), une origine seule, ou déjà suffixée de /api
+const raw = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+const baseURL = !raw ? '/api' : /\/api$/.test(raw) ? raw : `${raw}/api`;
+
+const api = axios.create({ baseURL });
 
 // Ajoute le token JWT à chaque requête si présent
 api.interceptors.request.use((config) => {
