@@ -17,6 +17,15 @@ function getTransporter() {
 const fmt = (d) =>
   new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 
+// Échappement HTML des saisies utilisateur (évite l'injection dans l'email)
+const esc = (v) =>
+  String(v ?? '').replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+  );
+
+// Supprime les retours à la ligne (injection d'en-têtes dans le sujet)
+const flat = (v) => String(v ?? '').replace(/[\r\n]+/g, ' ').trim();
+
 async function sendReservationEmail(r) {
   const t = getTransporter();
   if (!t) {
@@ -28,14 +37,14 @@ async function sendReservationEmail(r) {
     <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto">
       <h2 style="color:#1A2238">Nouvelle demande de réservation — Afrika Keur</h2>
       <table style="width:100%;border-collapse:collapse">
-        <tr><td style="padding:6px 0"><b>Client</b></td><td>${r.firstName} ${r.lastName}</td></tr>
-        <tr><td style="padding:6px 0"><b>Email</b></td><td>${r.email}</td></tr>
-        <tr><td style="padding:6px 0"><b>Téléphone</b></td><td>${r.phone}</td></tr>
+        <tr><td style="padding:6px 0"><b>Client</b></td><td>${esc(r.firstName)} ${esc(r.lastName)}</td></tr>
+        <tr><td style="padding:6px 0"><b>Email</b></td><td>${esc(r.email)}</td></tr>
+        <tr><td style="padding:6px 0"><b>Téléphone</b></td><td>${esc(r.phone)}</td></tr>
         <tr><td style="padding:6px 0"><b>Arrivée</b></td><td>${fmt(r.checkIn)}</td></tr>
         <tr><td style="padding:6px 0"><b>Départ</b></td><td>${fmt(r.checkOut)}</td></tr>
-        <tr><td style="padding:6px 0"><b>Chambre</b></td><td>${r.roomType || '—'}</td></tr>
-        <tr><td style="padding:6px 0"><b>Personnes</b></td><td>${r.guests}</td></tr>
-        <tr><td style="padding:6px 0;vertical-align:top"><b>Message</b></td><td>${r.message || '—'}</td></tr>
+        <tr><td style="padding:6px 0"><b>Chambre</b></td><td>${esc(r.roomType) || '—'}</td></tr>
+        <tr><td style="padding:6px 0"><b>Personnes</b></td><td>${esc(r.guests)}</td></tr>
+        <tr><td style="padding:6px 0;vertical-align:top"><b>Message</b></td><td>${esc(r.message) || '—'}</td></tr>
       </table>
     </div>`;
 
@@ -43,7 +52,7 @@ async function sendReservationEmail(r) {
     from: `"Afrika Keur — Réservations" <${process.env.SMTP_USER}>`,
     to: process.env.RESERVATION_TO || process.env.SMTP_USER,
     replyTo: r.email,
-    subject: `Réservation — ${r.firstName} ${r.lastName} (${fmt(r.checkIn)})`,
+    subject: `Réservation — ${flat(r.firstName)} ${flat(r.lastName)} (${fmt(r.checkIn)})`,
     html,
   });
   return true;

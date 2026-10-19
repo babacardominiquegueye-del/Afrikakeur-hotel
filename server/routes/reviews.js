@@ -4,8 +4,14 @@ const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
+// L'option ?all=1 (avis non publiés) exige d'être connecté
+function requireAuthIfAll(req, res, next) {
+  if (req.query.all !== '1') return next();
+  protect(req, res, () => authorize('admin', 'editor')(req, res, next));
+}
+
 // GET /api/reviews  (public : uniquement les avis publiés)
-router.get('/', async (req, res) => {
+router.get('/', requireAuthIfAll, async (req, res) => {
   const all = req.query.all === '1';
   const filter = all ? {} : { published: true };
   const reviews = await Review.find(filter).sort({ date: -1 });

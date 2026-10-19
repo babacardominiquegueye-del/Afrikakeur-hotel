@@ -8,14 +8,28 @@ const router = express.Router();
 // POST /api/reservations  (public) — crée la demande + envoie un email
 router.post('/', async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, checkIn, checkOut } = req.body;
+    const { firstName, lastName, email, phone, checkIn, checkOut, roomType, guests, message } =
+      req.body;
     if (!firstName || !lastName || !email || !phone || !checkIn || !checkOut)
       return res.status(400).json({ message: 'Merci de remplir tous les champs obligatoires.' });
+
+    if (!/^\S+@\S+\.\S+$/.test(email))
+      return res.status(400).json({ message: 'Adresse email invalide.' });
 
     if (new Date(checkOut) <= new Date(checkIn))
       return res.status(400).json({ message: 'La date de départ doit être après la date d\'arrivée.' });
 
-    const reservation = await Reservation.create(req.body);
+    const reservation = await Reservation.create({
+      firstName: String(firstName).slice(0, 80),
+      lastName: String(lastName).slice(0, 80),
+      email: String(email).slice(0, 120),
+      phone: String(phone).slice(0, 40),
+      checkIn,
+      checkOut,
+      roomType: String(roomType || '').slice(0, 120),
+      guests: Number(guests) || 1,
+      message: String(message || '').slice(0, 2000),
+    });
 
     // Envoi email non bloquant : on ne fait pas échouer la demande si le SMTP tombe
     sendReservationEmail(reservation).catch((e) =>

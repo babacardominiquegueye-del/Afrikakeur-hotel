@@ -10,7 +10,11 @@ const upload = multer({
   limits: { fileSize: 8 * 1024 * 1024 }, // 8 Mo max
   fileFilter: (req, file, cb) => {
     if (/^image\/(jpe?g|png|webp|gif|avif)$/.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Format d\'image non supporté.'));
+    else {
+      const err = new Error('Format d\'image non supporté.');
+      err.status = 400;
+      cb(err);
+    }
   },
 });
 
